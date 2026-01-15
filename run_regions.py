@@ -13,11 +13,9 @@ def collect_region(region_name, cities, collector):
     weather_data = collector.collect_multiple_cities(cities)
     
     if weather_data:
-        # Сохраняем отдельно для каждого региона
         filename = f"data/weather_{region_name.lower()}.csv"
         DataSaver.save_to_csv(weather_data, filename)
         
-        # Показываем статистику
         print(f"\n📊 Статистика для {region_name}:")
         temperatures = [d.get('temperature_c') for d in weather_data if d.get('temperature_c')]
         if temperatures:
@@ -35,37 +33,27 @@ def main():
     
     load_dotenv()
     
-    # Проверяем ключ
     api_key = os.getenv('WEATHERAPI_API_KEY')
     if not api_key or api_key == 'ваш_api_ключ_здесь':
         print("⚠️  Используем демо-режим")
     
-    # Создаем коллектор
     collector = WeatherAPIDataCollector()
     
-    # Создаем папку data
     os.makedirs('data', exist_ok=True)
-    
-    # Собираем данные по регионам
     all_data = []
     
-    # Российские города (первые 10)
     russian_cities = RUSSIAN_CITIES[:10]
     if 'Orenburg' not in russian_cities:
         russian_cities.append('Orenburg')
     
     russia_data = collect_region('Россия', russian_cities, collector)
     all_data.extend(russia_data)
-    
-    # Европейские города (первые 5)
     europe_data = collect_region('Европа', EUROPEAN_CITIES[:5], collector)
     all_data.extend(europe_data)
     
-    # Азиатские города (первые 5)
     asia_data = collect_region('Азия', ASIAN_CITIES[:5], collector)
     all_data.extend(asia_data)
     
-    # Сохраняем все данные вместе
     if all_data:
         DataSaver.save_to_csv(all_data, 'data/weather_all_regions.csv')
         DataSaver.save_to_json(all_data, 'data/weather_all_regions.json')
@@ -74,7 +62,6 @@ def main():
         print("✅ ВСЕ ДАННЫХ СОБРАНЫ!")
         print(f"{'='*60}")
         
-        # Общая статистика
         DataSaver.print_data_summary(all_data, "всех данных")
 
 if __name__ == "__main__":

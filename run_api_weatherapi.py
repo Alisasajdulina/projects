@@ -5,13 +5,42 @@ from weatherapi_collector import WeatherAPIDataCollector
 from config import CITIES
 from data_saver import DataSaver
 
+def search_single_city(city_name):
+    """Поиск погоды для одного города"""
+    print(f"🔍 Поиск погоды для: {city_name}")
+    
+    collector = WeatherAPIDataCollector()
+    weather = collector.get_current_weather(city_name)
+    
+    if weather:
+        print(f"\n✅ Погода в {city_name}:")
+        print(f"   Температура: {weather.get('temperature_c', 'N/A')}°C")
+        print(f"   Ветер: {weather.get('wind_kph', 'N/A')} км/ч")
+        print(f"   Влажность: {weather.get('humidity', 'N/A')}%")
+        print(f"   Состояние: {weather.get('condition_text', 'N/A')}")
+        
+        os.makedirs('data/single', exist_ok=True)
+        filename = f"data/single/{city_name.lower().replace(' ', '_')}.csv"
+        collector.save_to_csv([weather], filename)
+        
+        return True
+    else:
+        print(f"❌ Не удалось получить данные для {city_name}")
+        return False
+
 def main():
     """Основная функция сбора данных через WeatherAPI"""
+
+    if len(sys.argv) > 1 and sys.argv[1] == 'search':
+        if len(sys.argv) > 2:
+            city = ' '.join(sys.argv[2:])
+            search_single_city(city)
+        else:
+            print("Использование: python run_api_weatherapi.py search <город>")
+        return
     
-    # Загружаем переменные окружения
     load_dotenv()
     
-    # Проверяем наличие API ключа
     api_key = os.getenv('WEATHERAPI_API_KEY')
     
     print("=" * 70)
@@ -25,8 +54,6 @@ def main():
         print("   Получите ключ на: https://www.weatherapi.com/")
         print("   Добавьте в .env: WEATHERAPI_API_KEY=ваш_ключ")
     
-    # Определяем сколько городов собирать
-    # Если передали аргумент командной строки
     if len(sys.argv) > 1:
         try:
             if sys.argv[1].lower() == 'all':
@@ -36,44 +63,35 @@ def main():
                 num_cities = int(sys.argv[1])
                 print(f"📊 Собираем {num_cities} городов")
         except:
-            num_cities = 10  # по умолчанию
+            num_cities = 10  
             print(f"📊 Собираем {num_cities} городов (по умолчанию)")
     else:
-        num_cities = len(CITIES)  # ← ВСЕ города!
+        num_cities = len(CITIES) 
         print(f"📊 Собираем ВСЕ города: {num_cities} городов")
     
-    # Получаем список городов для сбора
     cities_to_collect = CITIES[:num_cities]
     
-    # Проверяем, есть ли Оренбург в списке
     if 'Orenburg' not in cities_to_collect:
         print("➕ Добавляем Оренбург в список")
         cities_to_collect.append('Orenburg')
     
-    # Показываем список городов
     print("\n📋 СПИСОК ГОРОДОВ:")
     print("-" * 40)
     for i, city in enumerate(cities_to_collect, 1):
         print(f"  {i:2d}. {city}")
     print("-" * 40)
     
-    # Создаем коллектор
     collector = WeatherAPIDataCollector()
     
-    # Собираем данные
     weather_data = collector.collect_multiple_cities(cities_to_collect)
     
     if weather_data:
-        # Создаем папку data если её нет
         os.makedirs('data', exist_ok=True)
-        
-        # Сохраняем в CSV
         collector.save_to_csv(
             weather_data,
             'data/weatherapi_weather.csv'
         )
         
-        # Сохраняем в JSON
         collector.save_to_json(
             weather_data,
             'data/weatherapi_weather.json'
@@ -83,10 +101,8 @@ def main():
         print("✅ СБОР ДАННЫХ УСПЕШНО ЗАВЕРШЕН!")
         print(f"{'='*70}")
         
-        # Показать сводку
         DataSaver.print_data_summary(weather_data, "данных о погоде")
         
-        # Показать статистику по температурам
         temperatures = [d.get('temperature_c') for d in weather_data if d.get('temperature_c') is not None]
         if temperatures:
             print(f"\n📈 СТАТИСТИКА ПО ТЕМПЕРАТУРАМ:")
