@@ -10,17 +10,15 @@ try:
     from parsing.vk_parser import VKParser
     print("✅ VKParser импортирован")
     
-    parser = VKParser(headless=False)  # Видим браузер
+    parser = VKParser(headless=False)  
     print("✅ Парсер создан")
     
-    # Тестовый поиск
     print("\n🔍 Тестовый поиск...")
     posts = parser.search_public_posts("Python", 2)
     
     print(f"\n📊 Результат: {len(posts)} постов")
     
     if posts:
-        # Просто выводим
         for i, post in enumerate(posts, 1):
             print(f"\n{i}. {post.get('text', 'Нет текста')}")
             print(f"   Автор: {post.get('author', 'N/A')}")

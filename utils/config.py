@@ -1,12 +1,12 @@
-# Конфигурация VK парсера
+
 VK_CONFIG = {
     'base_url': 'https://vk.com',
     'public_pages': [
-        'club1',            # Паблик ВКонтакте
-        'news',             # Новости
-        'humor',            # Юмор
-        'public_tech',      # Технологии
-        'science'           # Наука
+        'club1',            
+        'news',            
+        'humor',            
+        'public_tech',     
+        'science'           
     ],
     'search_queries': [
         'новости',

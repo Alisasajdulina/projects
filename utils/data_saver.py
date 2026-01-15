@@ -24,19 +24,14 @@ class DataSaver:
             return False
         
         try:
-            # Создаем директорию если нет
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             
-            # Конвертируем в DataFrame
             df = pd.DataFrame(data)
-            
-            # Сохраняем
             df.to_csv(filename, index=False, encoding=encoding)
             
             print(f"✅ Данные сохранены: {filename}")
             print(f"   Записей: {len(df)} | Колонок: {len(df.columns)}")
             
-            # Показываем информацию о файле
             file_size = os.path.getsize(filename) / 1024  # KB
             print(f"   Размер файла: {file_size:.2f} KB")
             
@@ -98,11 +93,7 @@ class DataSaver:
         except Exception as e:
             print(f"❌ Ошибка при сохранении Excel: {e}")
             return False
-
-
-# Пример использования
 if __name__ == "__main__":
-    # Тестовые данные
     test_data = [
         {"name": "Иван", "age": 25, "city": "Москва"},
         {"name": "Мария", "age": 30, "city": "Санкт-Петербург"},
@@ -111,11 +102,8 @@ if __name__ == "__main__":
     
     print("Тестирование DataSaver...")
     
-    # Сохраняем в CSV
     DataSaver.save_to_csv(test_data, "test_data.csv")
     
-    # Сохраняем в JSON
     DataSaver.save_to_json(test_data, "test_data.json")
     
-    # Печатаем сводку
     DataSaver.print_data_summary(test_data, "тестовых данных")

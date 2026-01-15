@@ -1,8 +1,7 @@
-# test_vk_simple.py
+
 import sys
 import os
 
-# Добавляем путь к проекту
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
@@ -10,16 +9,12 @@ try:
     
     print("✅ Модуль VKParser успешно импортирован!")
     
-    # Создаем парсер
-    parser = VKParser(headless=False)  # headless=False чтобы видеть что происходит
-    
+    parser = VKParser(headless=False)  
     try:
-        # Простой тест
         print("\n🧪 Запускаем тест...")
         result = parser.get_simple_test()
         print(f"Результат теста: {result}")
         
-        # Поиск постов
         print("\n🔍 Ищем посты...")
         posts = parser.search_public_posts("технологии", max_posts=3)
         

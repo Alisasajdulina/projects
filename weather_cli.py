@@ -69,7 +69,6 @@ class WeatherCLI:
         """Поиск погоды для города"""
         print(f"\n🔍 Поиск погоды для: {city}")
         
-        # Сначала ищем в базе
         found_cities = find_city(city)
         if found_cities:
             if len(found_cities) == 1:
@@ -110,7 +109,6 @@ class WeatherCLI:
         """Показать список городов"""
         print(f"\n📋 Всего городов в базе: {len(CITIES)}")
         
-        # Разбиваем на страницы
         page_size = 20
         total_pages = (len(CITIES) + page_size - 1) // page_size
         
@@ -158,19 +156,15 @@ class WeatherCLI:
         weather = self.collector.get_current_weather(city)
         
         if weather:
-            # Создаем папку если нет
             os.makedirs('data/saved', exist_ok=True)
             
-            # Генерируем имя файла
             import datetime
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"data/saved/{city.lower().replace(' ', '_')}_{timestamp}"
             
-            # Сохраняем в CSV
             df = pd.DataFrame([weather])
             df.to_csv(f"{filename}.csv", index=False, encoding='utf-8-sig')
             
-            # Сохраняем в JSON
             with open(f"{filename}.json", 'w', encoding='utf-8') as f:
                 json.dump(weather, f, ensure_ascii=False, indent=2)
             

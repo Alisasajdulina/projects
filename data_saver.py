@@ -21,20 +21,15 @@ class DataSaver:
             return False
         
         try:
-            # Создаем директорию если нет
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             
-            # Конвертируем в DataFrame
             df = pd.DataFrame(data)
-            
-            # Сохраняем
             df.to_csv(filename, index=False, encoding=encoding)
             
             print(f"✅ Данные сохранены: {filename}")
             print(f"   Записей: {len(df)} | Колонок: {len(df.columns)}")
             
-            # Показываем информацию о файле
-            file_size = os.path.getsize(filename) / 1024  # KB
+            file_size = os.path.getsize(filename) / 1024  
             print(f"   Размер файла: {file_size:.2f} KB")
             
             return True

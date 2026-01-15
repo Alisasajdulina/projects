@@ -7,7 +7,6 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
-# Загружаем переменные окружения
 load_dotenv()
 
 class APIDataCollector:
@@ -33,7 +32,6 @@ class APIDataCollector:
             'Accept': 'application/json'
         })
         
-        # Проверяем API ключ
         api_key = os.getenv('WEATHERAPI_API_KEY')
         if not api_key or api_key == 'ваш_api_ключ_здесь':
             print("⚠️  API ключ не найден, используем демо-режим")
@@ -50,28 +48,19 @@ class APIDataCollector:
         Returns:
             Словарь с данными ответа
         """
-        # Демо-режим с тестовыми данными
         if self.demo_mode:
             print(f"   [ДЕМО] Запрос к {endpoint}")
             return self._get_mock_data(params)
         
         try:
-            # Для WeatherAPI
             base_url = "http://api.weatherapi.com/v1"
             url = f"{base_url}{endpoint}"
-            
-            # Добавляем параметры
             request_params = params or {}
-            
-            # Добавляем API ключ
             api_key = os.getenv('WEATHERAPI_API_KEY')
             if api_key:
                 request_params['key'] = api_key
-            
-            # Для WeatherAPI добавляем язык
             request_params['lang'] = 'ru'
             
-            # Выполняем запрос
             print(f"   Запрос: {url}")
             
             response = self.session.get(url, params=request_params, timeout=15)
@@ -139,16 +128,13 @@ class APIDataCollector:
             return
         
         df = pd.DataFrame(data)
-        
-        # Создаем папку если нет
+    
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         
-        # Сохраняем
         df.to_csv(filename, index=False, encoding='utf-8-sig')
         print(f"✅ Данные сохранены в {filename}")
         print(f"   Всего записей: {len(df)}")
         
-        # Показываем первые 3 строки
         print("\nПервые 3 записи:")
         print(df.head(3).to_string())
     

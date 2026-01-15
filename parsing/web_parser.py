@@ -15,7 +15,6 @@ from bs4 import BeautifulSoup
 import logging
 import os
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -49,7 +48,6 @@ class DynamicWebParser:
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
-        # Автоматическая установка ChromeDriver
         service = Service(ChromeDriverManager().install())
         
         self.driver = webdriver.Chrome(
@@ -57,7 +55,6 @@ class DynamicWebParser:
             options=chrome_options
         )
         
-        # Скрываем автоматизацию
         self.driver.execute_script(
             "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
         )
@@ -127,13 +124,10 @@ class HabrParser(DynamicWebParser):
             url = f"{self.base_url}/ru/all/page{page_num}/"
             self.driver.get(url)
             
-            # Ждем загрузки
             self.wait_for_element(By.CLASS_NAME, "tm-articles-list")
             
-            # Прокручиваем для загрузки всего контента
             self.scroll_to_bottom(pause_time=0.5)
             
-            # Получаем HTML
             html = self.get_page_source()
             articles = self._extract_articles_from_html(html)
             
@@ -141,7 +135,6 @@ class HabrParser(DynamicWebParser):
             
             logger.info(f" Найдено {len(articles)} статей")
             
-            # Пауза между страницами
             if page_num < page_count:
                 time.sleep(2)
         
@@ -153,42 +146,32 @@ class HabrParser(DynamicWebParser):
         soup = BeautifulSoup(html, 'html.parser')
         articles = []
         
-        # Находим все статьи
         article_elements = soup.find_all('article', class_='tm-articles-list_item')
         
         for article in article_elements:
             try:
-                # Извлечение заголовка
                 title_elem = article.find('h2', class_='tm-title')
                 title = title_elem.text.strip() if title_elem else "Без заголовка"
                 
-                # Извлечение ссылки
                 link_elem = article.find('a', class_='tm-title_link')
                 link = f"{self.base_url}{link_elem['href']}" if link_elem else ""
                 
-                # Извлечение автора
                 author_elem = article.find('a', class_='tm-user-info_username')
                 author = author_elem.text.strip() if author_elem else "Неизвестный"
                 
-                # Извлечение времени
                 time_elem = article.find('time')
                 pub_time = time_elem['datetime'] if time_elem else ""
                 
-                # Извлечение хабов
                 hubs = []
                 hub_elements = article.find_all('a', class_='tm-publication-hub_link')
                 for hub in hub_elements:
                     hubs.append(hub.text.strip())
-                
-                # Извлечение рейтинга и просмотров
                 rating_elem = article.find('span', class_='tm-votes-meter_value')
                 rating = rating_elem.text.strip() if rating_elem else "0"
                 
-                # Извлечение текста превью
                 preview_elem = article.find('div', class_='article-formatted-body')
                 preview = preview_elem.text.strip() if preview_elem else ""
                 
-                # Сохраняем данные
                 article_data = {
                     'title': title,
                     'link': link,
@@ -207,11 +190,6 @@ class HabrParser(DynamicWebParser):
                 continue
         
         return articles
-
-
-# ==============================================
-# НОВЫЙ КЛАСС: ПАРСЕР ВКОНТАКТЕ
-# ==============================================
 
 class VKParser(DynamicWebParser):
     """Парсер публичных постов с ВКонтакте (vk.com)"""
@@ -252,29 +230,19 @@ class VKParser(DynamicWebParser):
         try:
             logger.info("Начинаем процесс входа в ВКонтакте...")
             
-            # Переходим на главную страницу
             self.driver.get(self.base_url)
             time.sleep(3)
-            
-            # Находим поле ввода логина
             email_input = self.wait_for_element(By.NAME, 'email', timeout=10)
             email_input.clear()
             email_input.send_keys(username)
-            
-            # Находим поле ввода пароля
             password_input = self.driver.find_element(By.NAME, 'pass')
             password_input.clear()
             password_input.send_keys(password)
-            
-            # Нажимаем кнопку входа
             login_button = self.driver.find_element(By.XPATH, 
                 "//button[@type='submit' and contains(@class, 'FlatButton')]")
             login_button.click()
-            
-            # Ждем загрузки страницы
             time.sleep(5)
             
-            # Проверяем успешность входа
             if "feed" in self.driver.current_url or "id" in self.driver.current_url:
                 self.is_logged_in = True
                 logger.info("Успешный вход в ВКонтакте!")
@@ -301,16 +269,12 @@ class VKParser(DynamicWebParser):
         try:
             logger.info(f"Начинаем поиск постов по запросу: '{search_query}'")
             
-            # Кодируем запрос для URL
             from urllib.parse import quote
             encoded_query = quote(search_query)
-            
-            # Переходим на страницу поиска
+        
             search_url = f"{self.base_url}/search?c[q]={encoded_query}&c[section]=all"
             self.driver.get(search_url)
             time.sleep(3)
-            
-            # Переключаемся на поиск по новостям/постам
             try:
                 posts_tab = self.wait_for_element(
                     By.XPATH, 
@@ -322,39 +286,30 @@ class VKParser(DynamicWebParser):
             except:
                 logger.info("Не найдена вкладка новостей, используем текущий вид")
             
-            # Прокручиваем страницу для загрузки контента
             posts = []
             last_post_count = 0
             scroll_attempts = 0
             max_scroll_attempts = 20
             
             while len(posts) < max_posts and scroll_attempts < max_scroll_attempts:
-                # Прокрутка
+    
                 self.scroll_to_bottom(pause_time=1.5)
                 scroll_attempts += 1
-                
-                # Получаем HTML
                 html = self.get_page_source()
-                
-                # Извлекаем посты
                 new_posts = self._extract_posts_from_html(html, search_query)
                 
-                # Фильтруем дубликаты
                 unique_new_posts = []
                 for post in new_posts:
                     if post['post_id'] not in [p['post_id'] for p in posts]:
                         unique_new_posts.append(post)
                 
                 posts.extend(unique_new_posts)
-                
-                # Проверяем прогресс
                 if len(posts) > last_post_count:
                     logger.info(f"Собрано постов: {len(posts)}/{max_posts}")
                     last_post_count = len(posts)
                 
-                # Если новые посты не появились, делаем дополнительную прокрутку
                 if len(unique_new_posts) == 0 and scroll_attempts % 5 == 0:
-                    # Пробуем кликнуть "Показать больше"
+        
                     try:
                         more_button = self.driver.find_element(
                             By.XPATH, 
@@ -365,7 +320,6 @@ class VKParser(DynamicWebParser):
                     except:
                         pass
                 
-                # Небольшая пауза между прокрутками
                 time.sleep(1)
             
             logger.info(f"Завершено. Всего собрано {len(posts)} постов")
@@ -389,13 +343,10 @@ class VKParser(DynamicWebParser):
         try:
             logger.info(f"Получаем посты с публичной страницы: {page_id}")
             
-            # Формируем URL страницы
             page_url = f"{self.base_url}/{page_id}"
             
             self.driver.get(page_url)
             time.sleep(3)
-            
-            # Ждем загрузки контента
             try:
                 self.wait_for_element(
                     By.CLASS_NAME, 
@@ -405,35 +356,26 @@ class VKParser(DynamicWebParser):
             except:
                 logger.warning("Не найдены посты с классом wall_post_text")
             
-            # Прокручиваем для загрузки постов
             posts = []
             scroll_attempts = 0
             max_scroll_attempts = 15
             
             while len(posts) < max_posts and scroll_attempts < max_scroll_attempts:
-                # Прокрутка
+              
                 self.scroll_to_bottom(pause_time=2)
                 scroll_attempts += 1
-                
-                # Получаем HTML
                 html = self.get_page_source()
-                
-                # Извлекаем посты
                 new_posts = self._extract_page_posts_from_html(html, page_id)
                 
-                # Фильтруем дубликаты
                 unique_new_posts = []
                 for post in new_posts:
                     if post['post_id'] not in [p['post_id'] for p in posts]:
                         unique_new_posts.append(post)
                 
                 posts.extend(unique_new_posts)
-                
-                # Логируем прогресс
                 if len(posts) > 0 and (len(posts) % 10 == 0 or len(unique_new_posts) == 0):
                     logger.info(f"Собрано постов: {len(posts)}/{max_posts}")
                 
-                # Пауза
                 time.sleep(1.5)
             
             logger.info(f"Завершено. Собрано {len(posts)} постов с {page_id}")
@@ -447,13 +389,10 @@ class VKParser(DynamicWebParser):
         """Извлечение постов из HTML страницы поиска"""
         soup = BeautifulSoup(html, 'html.parser')
         posts = []
-        
-        # Находим блоки с результатами поиска
         result_blocks = soup.find_all('div', class_=re.compile(r'result.*wrapper'))
         
         for block in result_blocks:
             try:
-                # Извлекаем данные поста
                 post_data = self._parse_post_block(block)
                 if post_data:
                     post_data['search_query'] = search_query
@@ -463,8 +402,6 @@ class VKParser(DynamicWebParser):
             except Exception as e:
                 logger.debug(f"Ошибка при парсинге блока: {e}")
                 continue
-        
-        # Альтернативный поиск по структуре wall_item
         if not posts:
             wall_items = soup.find_all('div', class_='wall_item')
             for item in wall_items:
@@ -485,7 +422,6 @@ class VKParser(DynamicWebParser):
         soup = BeautifulSoup(html, 'html.parser')
         posts = []
         
-        # Поиск постов на стене
         wall_items = soup.find_all('div', class_='wall_item')
         
         for item in wall_items:
@@ -504,25 +440,20 @@ class VKParser(DynamicWebParser):
     def _parse_post_block(self, block) -> Optional[Dict]:
         """Парсинг блока поста из результатов поиска"""
         try:
-            # ID поста
             post_id_elem = block.get('id', '')
             if not post_id_elem:
                 post_id_elem = block.get('data-post-id', '')
             
-            # Текст поста
             text_elem = block.find('div', class_=re.compile(r'wall_post_text'))
             text = text_elem.get_text(strip=True, separator=' ') if text_elem else ""
             
-            # Автор
             author_elem = block.find('a', class_=re.compile(r'author|user'))
             author = author_elem.get_text(strip=True) if author_elem else "Неизвестный"
             author_link = author_elem.get('href', '') if author_elem else ""
             
-            # Время
             time_elem = block.find('span', class_=re.compile(r'time|rel_date'))
             post_time = time_elem.get_text(strip=True) if time_elem else ""
             
-            # Статистика (лайки, репосты, просмотры)
             likes_elem = block.find('span', class_=re.compile(r'like.*count'))
             likes = likes_elem.get_text(strip=True) if likes_elem else "0"
             
@@ -532,13 +463,11 @@ class VKParser(DynamicWebParser):
             views_elem = block.find('span', class_=re.compile(r'view.*count'))
             views = views_elem.get_text(strip=True) if views_elem else "0"
             
-            # Ссылка на пост
             link_elem = block.find('a', class_=re.compile(r'post_link'))
             post_link = link_elem.get('href', '') if link_elem else ""
             if post_link and not post_link.startswith('http'):
                 post_link = f"{self.base_url}{post_link}"
             
-            # Фото/медиа
             media_count = len(block.find_all('div', class_=re.compile(r'media|photo')))
             
             post_data = {
@@ -567,38 +496,29 @@ class VKParser(DynamicWebParser):
     def _parse_wall_item(self, item) -> Optional[Dict]:
         """Парсинг элемента стены (wall_item)"""
         try:
-            # ID поста
             post_id = item.get('id', '')
             if not post_id:
                 post_id = f"wall_item_{hash(str(item)[:100])}"
             
-            # Текст
             text_div = item.find('div', class_='wall_post_text')
             text = text_div.get_text(strip=True, separator=' ') if text_div else ""
             
-            # Автор
             author_div = item.find('div', class_='author')
             author = author_div.get_text(strip=True) if author_div else ""
             
-            # Время
             time_span = item.find('span', class_='rel_date')
             post_time = time_span.get_text(strip=True) if time_span else ""
             
-            # Статистика
             likes = self._extract_stat(item, 'like')
             reposts = self._extract_stat(item, 'share')
             comments = self._extract_stat(item, 'comment')
             views = self._extract_stat(item, 'view')
-            
-            # Фото
             photos = item.find_all('div', class_='photo')
             photo_count = len(photos)
             
-            # Видео
             videos = item.find_all('div', class_='video')
             video_count = len(videos)
-            
-            # Ссылка на пост
+        
             post_link = ""
             link_elem = item.find('a', class_='post_link')
             if link_elem:
@@ -631,8 +551,6 @@ class VKParser(DynamicWebParser):
             stat_elem = item.find('span', class_=re.compile(f'{stat_type}.*count'))
             if stat_elem:
                 return stat_elem.get_text(strip=True)
-            
-            # Альтернативный поиск
             divs = item.find_all('div', class_=re.compile(f'{stat_type}s?.*count'))
             for div in divs:
                 text = div.get_text(strip=True)
@@ -651,7 +569,6 @@ class VKParser(DynamicWebParser):
             if not count_str or count_str == '0':
                 return '0'
             
-            # Убираем лишние символы
             count_str = re.sub(r'[^\d.KMБ,]', '', count_str)
             
             if 'K' in count_str or 'К' in count_str:
@@ -679,7 +596,6 @@ class VKParser(DynamicWebParser):
         logger.info(f"Получение популярных постов из категории: {category}")
         
         try:
-            # Попробуем найти популярные посты через discover
             discover_url = f"{self.base_url}/discover"
             if category != "all":
                 discover_url += f"?c[section]={category}"
@@ -687,10 +603,7 @@ class VKParser(DynamicWebParser):
             self.driver.get(discover_url)
             time.sleep(3)
             
-            # Прокручиваем
             self.scroll_to_bottom(pause_time=1.5)
-            
-            # Получаем HTML
             html = self.get_page_source()
             soup = BeautifulSoup(html, 'html.parser')
             
@@ -699,7 +612,6 @@ class VKParser(DynamicWebParser):
             
             for i, element in enumerate(post_elements[:max_posts]):
                 try:
-                    # Упрощенный парсинг для discover
                     text_elem = element.find('div', class_=re.compile(r'wall_post_text'))
                     text = text_elem.get_text(strip=True, separator=' ') if text_elem else ""
                     

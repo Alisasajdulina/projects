@@ -33,14 +33,12 @@ def main():
         print(f"   💧 Влажность: {weather.get('humidity', 'N/A')}%")
         print(f"   ☁️  Состояние: {weather.get('condition_text', 'N/A')}")
         
-        # Дополнительная информация
         print(f"\n📊 Дополнительно:")
         print(f"   Ощущается как: {weather.get('feelslike_c', 'N/A')}°C")
         print(f"   Давление: {weather.get('pressure_mb', 'N/A')} гПа")
         print(f"   Облачность: {weather.get('cloud', 'N/A')}%")
         print(f"   Видимость: {weather.get('visibility_km', 'N/A')} км")
         
-        # Сохраняем в файл
         save = input(f"\n💾 Сохранить данные? (да/нет): ")
         if save.lower() in ['да', 'yes', 'y', 'д']:
             os.makedirs('data/search_results', exist_ok=True)

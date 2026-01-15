@@ -6,11 +6,9 @@ def main():
     print("ПАРСИНГ ДАННЫХ С ВКОНТАКТЕ")
     print("=" * 50)
     
-    # Создаем парсер (headless=False чтобы видеть браузер)
     parser = VKParser(headless=False)
     
     try:
-        # 1. Ищем посты по запросу
         print("\n🔍 Ищем посты по запросу 'программирование'...")
         posts = parser.search_public_posts("программирование", max_posts=5)
         
@@ -23,7 +21,6 @@ def main():
                 print(f"   👍 {post['likes']} лайков")
             print()
         
-        # 2. Ищем по другому запросу
         print("\n🔍 Ищем посты по запросу 'новости технологий'...")
         tech_posts = parser.search_public_posts("новости технологий", max_posts=3)
         
@@ -35,16 +32,12 @@ def main():
             if 'likes' in post:
                 print(f"   👍 {post['likes']} лайков")
             print()
-        
-        # Сохраняем все посты в файл
         all_posts = posts + tech_posts
         
         if all_posts:
-            # Создаем папку data если нет
             import os
             os.makedirs('data', exist_ok=True)
             
-            # Сохраняем в CSV
             import pandas as pd
             df = pd.DataFrame(all_posts)
             df.to_csv('data/vk_posts.csv', index=False, encoding='utf-8-sig')

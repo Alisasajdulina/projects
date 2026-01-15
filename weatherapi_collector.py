@@ -48,18 +48,15 @@ class WeatherAPIDataCollector(APIDataCollector):
                 'longitude': location.get('lon', None),
                 'local_time': location.get('localtime', ''),
                 
-                # Температура
                 'temperature_c': current.get('temp_c', None),
                 'feelslike_c': current.get('feelslike_c', None),
                 'temperature_f': current.get('temp_f', None),
                 'feelslike_f': current.get('feelslike_f', None),
                 
-                # Атмосферные условия
                 'humidity': current.get('humidity', None),
                 'pressure_mb': current.get('pressure_mb', None),
                 'pressure_in': current.get('pressure_in', None),
                 
-                # Ветер
                 'wind_kph': current.get('wind_kph', None),
                 'wind_mph': current.get('wind_mph', None),
                 'wind_dir': current.get('wind_dir', ''),
@@ -67,20 +64,16 @@ class WeatherAPIDataCollector(APIDataCollector):
                 'gust_kph': current.get('gust_kph', None),
                 'gust_mph': current.get('gust_mph', None),
                 
-                # Облачность и видимость
                 'cloud': current.get('cloud', None),
                 'visibility_km': current.get('vis_km', None),
                 'visibility_miles': current.get('vis_miles', None),
                 
-                # Состояние погоды
                 'condition_text': condition.get('text', ''),
                 'condition_icon': condition.get('icon', ''),
                 'condition_code': condition.get('code', None),
                 
-                # Дополнительно
                 'uv_index': current.get('uv', None),
                 
-                # Метаданные
                 'last_updated': current.get('last_updated', ''),
                 'scraped_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
@@ -108,7 +101,6 @@ class WeatherAPIDataCollector(APIDataCollector):
             print(f"🌤️  ДЕТАЛЬНАЯ ПОГОДА ДЛЯ {city.upper()}")
             print(f"{'='*60}")
             
-            # Вывод в табличном формате
             details = [
                 ("🌡️  Температура", f"{weather_data.get('temperature_c', 'N/A')}°C"),
                 ("🤔 Ощущается как", f"{weather_data.get('feelslike_c', 'N/A')}°C"),
@@ -153,7 +145,6 @@ class WeatherAPIDataCollector(APIDataCollector):
                       f"💨 {weather_data.get('wind_kph', 'N/A')} км/ч, "
                       f"💧 {weather_data.get('humidity', 'N/A')}%")
             else:
-                # В демо-режиме создаем тестовые данные
                 if self.demo_mode:
                     mock_data = self._create_mock_data(city)
                     all_weather.append(mock_data)
@@ -199,7 +190,7 @@ class WeatherAPIDataCollector(APIDataCollector):
         """
         params = {
             'q': city,
-            'days': min(days, 3),  # Бесплатный тариф ограничен 3 днями
+            'days': min(days, 3),  
             'aqi': 'no',
             'alerts': 'no'
         }

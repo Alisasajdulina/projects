@@ -1,6 +1,5 @@
-# Список городов для сбора данных
+
 CITIES = [
-    # Российские города
     'Moscow', 'Saint Petersburg', 'Novosibirsk',
     'Yekaterinburg', 'Kazan', 'Nizhny Novgorod',
     'Chelyabinsk', 'Samara', 'Omsk', 'Rostov-on-Don',
@@ -12,7 +11,6 @@ CITIES = [
     'Sochi', 'Ryazan', 'Penza', 'Lipetsk',
     'Naberezhnye Chelny', 'Kaliningrad', 'Stavropol',
     
-    # Международные города
     'London', 'New York', 'Tokyo', 'Berlin',
     'Paris', 'Rome', 'Madrid', 'Beijing',
     'Istanbul', 'Sydney', 'Dubai', 'Singapore',
@@ -22,7 +20,6 @@ CITIES = [
     'Stockholm', 'Oslo', 'Copenhagen', 'Helsinki'
 ]
 
-# Города с русскими названиями для поиска
 CITIES_RU = {
     'Москва': 'Moscow',
     'Санкт-Петербург': 'Saint Petersburg',
@@ -91,12 +88,10 @@ def find_city(search_term):
     search_term = search_term.lower().strip()
     results = []
     
-    # Ищем в английских названиях
     for city in CITIES:
         if search_term in city.lower():
             results.append(city)
     
-    # Ищем в русских названиях
     for ru_name, en_name in CITIES_RU.items():
         if search_term in ru_name.lower():
             if en_name not in results:
@@ -114,7 +109,6 @@ def get_city_info(city_name):
     Returns:
         Словарь с информацией о городе
     """
-    # Проверяем, есть ли город в списке
     if city_name in CITIES:
         return {
             'name': city_name,
@@ -122,7 +116,6 @@ def get_city_info(city_name):
             'russian_name': get_russian_name(city_name)
         }
     else:
-        # Город не в списке, но может существовать
         return {
             'name': city_name,
             'in_list': False,

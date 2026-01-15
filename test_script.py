@@ -8,7 +8,6 @@ import sys
 print(f"\nPython версия: {sys.version}")
 print(f"Python путь: {sys.executable}")
 
-# Пробуем импортировать модули
 try:
     from parsing.vk_parser import VKParser
     print("✅ VKParser импортирован успешно")
